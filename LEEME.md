@@ -1,4 +1,4 @@
-# Habitos
+# TodoUtesa
 
 App web personal de tareas + pomodoro + seguimiento. Un solo proceso Python, sin
 dependencias externas (solo biblioteca estandar), datos en SQLite.
