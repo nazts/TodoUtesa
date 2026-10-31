@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TodoUtesa - foco y seguimiento</title>
+<link rel="stylesheet" href="/assets/bootstrap.min.css">
+<link rel="stylesheet" href="/assets/bootstrap-icons.css">
+<link rel="stylesheet" href="/app.css">
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="lateral">
+    <div class="marca">
+      <span class="marca-icono"><i class="bi bi-soundwave"></i></span>
+      <div>
+        <div class="marca-nombre">TodoUtesa</div>
+        <div class="marca-sub">foco &middot; seguimiento</div>
+      </div>
+    </div>
+
+    <nav class="menu">
+      <button class="menu-item activo" data-vista="hoy"><i class="bi bi-house-door"></i> Hoy</button>
+      <button class="menu-item" data-vista="tareas"><i class="bi bi-check2-square"></i> Tareas</button>
+      <button class="menu-item" data-vista="pomodoro"><i class="bi bi-stopwatch"></i> Pomodoro</button>
+      <button class="menu-item" data-vista="calendario"><i class="bi bi-calendar3"></i> Calendario</button>
+      <button class="menu-item" data-vista="memoria"><i class="bi bi-clock-history"></i> Memoria</button>
+      <button class="menu-item" data-vista="notas"><i class="bi bi-journal-text"></i> Notas</button>
+      <button class="menu-item" data-vista="metricas"><i class="bi bi-graph-up-arrow"></i> Seguimiento</button>
+      <button class="menu-item" id="btn-telegram"><i class="bi bi-telegram"></i> Telegram</button>
+      <button class="menu-item" id="btn-google"><i class="bi bi-google"></i> Google</button>
+      <button class="menu-item" id="btn-servidor"><i class="bi bi-hdd-network"></i> Servidor</button>
+    </nav>
+
+    <div class="pie-lateral">
+      <div class="racha-caja">
+        <div class="racha-numero" id="lateral-racha">0</div>
+        <div class="racha-texto">dias seguidos<br>con foco</div>
+      </div>
+      <div class="mini-dato"><i class="bi bi-clock"></i> <span id="lateral-horas">0 h</span> esta semana</div>
+      <div class="mini-dato"><i class="bi bi-list-check"></i> <span id="lateral-pendientes">0</span> por hacer</div>
+    </div>
+  </aside>
+
+  <main class="contenido">
+
+    <!-- ============================ HOY ============================ -->
+    <section class="vista activa" id="vista-hoy">
+      <header class="cabecera">
+        <div>
+          <h1 id="saludo">Hola</h1>
+          <p class="sub" id="fecha-hoy">&nbsp;</p>
+        </div>
+        <button class="btn btn-primary" id="btn-nueva-hoy"><i class="bi bi-plus-lg"></i> Nueva tarea</button>
+      </header>
+
+      <div class="racha-panel" id="racha-panel">
+        <div class="racha-fuerte">
+          <div class="racha-numero" id="racha-numero">0</div>
+          <div class="racha-unidad">dias seguidos</div>
+        </div>
+        <div class="racha-centro">
+          <div class="racha-dias" id="racha-dias"></div>
+          <div class="racha-mensaje" id="racha-mensaje">&nbsp;</div>
+        </div>
+        <div class="racha-lado">
+          <div class="racha-insignia" id="racha-insignia">Empezando</div>
+          <div class="racha-mejor" id="racha-mejor">Mejor: 0</div>
+          <div class="racha-meta" id="racha-meta">0/5 esta semana</div>
+        </div>
+      </div>
+
+      <div class="fila-kpi">
+        <div class="kpi">
+          <div class="kpi-icono azul"><i class="bi bi-list-task"></i></div>
+          <div><div class="kpi-numero" id="kpi-hoy">0</div><div class="kpi-etiqueta">pendientes hoy</div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icono verde"><i class="bi bi-check2-circle"></i></div>
+          <div><div class="kpi-numero" id="kpi-hechas-hoy">0</div><div class="kpi-etiqueta">hechas hoy</div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icono ambar"><i class="bi bi-stopwatch"></i></div>
+          <div><div class="kpi-numero" id="kpi-min-hoy">0</div><div class="kpi-etiqueta">minutos de foco hoy</div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icono rojo"><i class="bi bi-exclamation-triangle"></i></div>
+          <div><div class="kpi-numero" id="kpi-vencidas">0</div><div class="kpi-etiqueta">atrasadas</div></div>
+        </div>
+      </div>
+
+      <div class="dos-columnas">
+        <div class="panel">
+          <div class="panel-cabecera">
+            <h2><i class="bi bi-sun"></i> Plan de hoy</h2>
+            <button class="btn-mini" id="btn-plan-ia" title="Sugerir orden segun el tiempo que tengas"><i class="bi bi-stars"></i> Armar plan</button>
+          </div>
+          <div id="lista-hoy" class="lista-tareas"></div>
+          <div id="plan-sugerido" class="plan-caja oculto"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-cabecera">
+            <h2><i class="bi bi-inbox"></i> Bandeja de entrada</h2>
+            <span class="badge-suave" id="badge-sin-fecha">0</span>
+          </div>
+          <p class="nota">Tareas sin fecha. Asi no se te pierde nada.</p>
+          <div id="lista-sin-fecha" class="lista-tareas compacta"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================== TAREAS =========================== -->
+    <section class="vista" id="vista-tareas">
+      <header class="cabecera">
+        <div>
+          <h1>Tareas</h1>
+          <p class="sub">Todo lo que tienes que hacer vive aqui.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-nueva"><i class="bi bi-plus-lg"></i> Nueva tarea</button>
+      </header>
+
+      <div class="barra-nube">
+        <div class="nube-info">
+          <i class="bi bi-cloud-arrow-down" id="nube-icono"></i>
+          <span id="nube-texto">Nube UTSA: sin configurar</span>
+        </div>
+        <div class="nube-botones">
+          <button class="btn-mini" id="btn-nube-sync"><i class="bi bi-arrow-repeat"></i> Sincronizar</button>
+          <button class="btn-mini" id="btn-nube-avisos"><i class="bi bi-bell"></i> Avisos</button>
+          <button class="btn-mini" id="btn-nube-config"><i class="bi bi-key"></i> Credenciales</button>
+        </div>
+      </div>
+
+      <div class="barra-filtros">
+        <div class="filtros" id="filtros-tareas">
+          <button class="chip activo" data-filtro="por_hacer">Por hacer</button>
+          <button class="chip" data-filtro="hoy">Hoy</button>
+          <button class="chip" data-filtro="semana">Esta semana</button>
+          <button class="chip" data-filtro="atrasadas">Atrasadas</button>
+          <button class="chip" data-filtro="perdidas">Perdidas</button>
+          <button class="chip" data-filtro="hechas">Hechas</button>
+          <button class="chip" data-filtro="todas">Todas</button>
+        </div>
+        <div class="buscador">
+          <i class="bi bi-search"></i>
+          <input type="text" id="buscador" placeholder="Buscar por titulo, nota o area...">
+        </div>
+      </div>
+
+      <div id="lista-tareas" class="lista-tareas"></div>
+      <div id="vacio-tareas" class="vacio oculto">
+        <i class="bi bi-clipboard-check"></i>
+        <p>No hay tareas con este filtro.</p>
+      </div>
+    </section>
+
+    <!-- ========================= POMODORO ========================== -->
+    <section class="vista" id="vista-pomodoro">
+      <header class="cabecera">
+        <div>
+          <h1>Pomodoro</h1>
+          <p class="sub">Cada bloque queda ligado a una tarea. Asi sabes en que se fue tu tiempo.</p>
+        </div>
+      </header>
+
+      <div class="dos-columnas pomo-grid">
+        <div class="panel centrado">
+          <div class="pomo-tarea">
+            <label>En que vas a trabajar</label>
+            <select id="pomo-tarea" class="form-select"></select>
+          </div>
+
+          <div class="aro">
+            <svg viewBox="0 0 220 220">
+              <circle class="aro-fondo" cx="110" cy="110" r="98"></circle>
+              <circle class="aro-progreso" id="aro-progreso" cx="110" cy="110" r="98"></circle>
+            </svg>
+            <div class="aro-centro">
+              <div class="pomo-tiempo" id="pomo-tiempo">25:00</div>
+              <div class="pomo-estado" id="pomo-estado">listo para empezar</div>
+            </div>
+          </div>
+
+          <div class="pomo-modos" id="pomo-modos">
+            <button class="chip activo" data-min="25">25 min</button>
+            <button class="chip" data-min="50">50 min</button>
+            <button class="chip" data-min="15" data-tipo="descanso">Descanso 15</button>
+            <button class="chip" data-min="5" data-tipo="descanso">Descanso 5</button>
+          </div>
+
+          <div class="pomo-botones">
+            <button class="btn btn-primary btn-lg" id="pomo-iniciar"><i class="bi bi-play-fill"></i> Iniciar</button>
+            <button class="btn btn-outline-light" id="pomo-reiniciar" title="Reiniciar"><i class="bi bi-arrow-counterclockwise"></i></button>
+            <button class="btn btn-outline-light" id="pomo-terminar" title="Terminar y guardar"><i class="bi bi-check-lg"></i> Terminar</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-cabecera"><h2><i class="bi bi-list-ol"></i> Bloques de hoy</h2></div>
+          <div id="pomo-registro" class="registro-pomo"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================== CALENDARIO ========================= -->
+    <section class="vista" id="vista-calendario">
+      <header class="cabecera">
+        <div>
+          <h1>Calendario</h1>
+          <p class="sub">Lo pendiente de cada dia. Marcar aqui actualiza la tarea y tus metricas.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-nueva-dia"><i class="bi bi-plus-lg"></i> Agendar</button>
+      </header>
+
+      <div class="panel">
+        <div class="cal-cabecera">
+          <button class="btn-mini" id="cal-anterior"><i class="bi bi-chevron-left"></i></button>
+          <h2 id="cal-titulo">&nbsp;</h2>
+          <button class="btn-mini" id="cal-siguiente"><i class="bi bi-chevron-right"></i></button>
+          <button class="btn-mini" id="cal-hoy">Hoy</button>
+        </div>
+        <div class="cal-dias-semana">
+          <div>Lun</div><div>Mar</div><div>Mie</div><div>Jue</div><div>Vie</div><div>Sab</div><div>Dom</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <div class="panel" id="panel-dia">
+        <div class="panel-cabecera">
+          <h2 id="dia-titulo">Selecciona un dia</h2>
+          <button class="btn-mini oculto" id="btn-nueva-dia-sel"><i class="bi bi-plus-lg"></i> Agendar aqui</button>
+        </div>
+        <div id="lista-dia" class="lista-tareas"></div>
+      </div>
+    </section>
+
+    <!-- ========================== MEMORIA ========================== -->
+    <section class="vista" id="vista-memoria">
+      <header class="cabecera">
+        <div>
+          <h1>Memoria</h1>
+          <p class="sub">Lo que ya hiciste y lo que sigue pendiente, sin depender de tu cabeza.</p>
+        </div>
+      </header>
+
+      <div class="dos-columnas">
+        <div class="panel">
+          <div class="panel-cabecera"><h2><i class="bi bi-check2-all"></i> Completado</h2><span class="badge-suave" id="badge-hechas">0</span></div>
+          <div id="lista-hechas" class="lista-tareas compacta"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-cabecera"><h2><i class="bi bi-hourglass-split"></i> Sigue pendiente</h2><span class="badge-suave" id="badge-pendientes">0</span></div>
+          <div id="lista-pendientes" class="lista-tareas compacta"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-cabecera"><h2><i class="bi bi-journal-text"></i> Bitacora de foco</h2></div>
+        <div id="bitacora" class="bitacora"></div>
+      </div>
+    </section>
+
+    <!-- =========================== NOTAS =========================== -->
+    <section class="vista" id="vista-notas">
+      <header class="cabecera">
+        <div>
+          <h1>Notas</h1>
+          <p class="sub">Captura rapida. Tambien puedes mandarlas por Telegram con /nota.</p>
+        </div>
+      </header>
+
+      <div class="panel">
+        <div class="panel-cabecera"><h2><i class="bi bi-pencil-square"></i> Nueva nota</h2></div>
+        <input type="text" class="form-control" id="ap-titulo" placeholder="Titulo (opcional)">
+        <textarea class="form-control" id="ap-cuerpo" rows="3" placeholder="Escribe la nota..." style="margin-top:8px"></textarea>
+        <div class="fila-acciones">
+          <select class="form-select" id="ap-tarea"></select>
+          <button class="btn btn-primary" id="btn-guardar-apunte">Guardar nota</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-cabecera">
+          <h2><i class="bi bi-journals"></i> Mis notas</h2>
+          <div class="buscador">
+            <i class="bi bi-search"></i>
+            <input type="text" id="buscador-notas" placeholder="Buscar en las notas...">
+          </div>
+        </div>
+        <div id="lista-apuntes" class="lista-apuntes"></div>
+      </div>
+    </section>
+
+    <!-- ======================== SEGUIMIENTO ======================== -->
+    <section class="vista" id="vista-metricas">
+      <header class="cabecera">
+        <div>
+          <h1>Seguimiento</h1>
+          <p class="sub">Cuanto enfocaste, que cumpliste y que conviene ajustar.</p>
+        </div>
+        <div class="filtros" id="filtros-periodo">
+          <button class="chip activo" data-periodo="semana">Semana</button>
+          <button class="chip" data-periodo="mes">Mes</button>
+        </div>
+      </header>
+
+      <div class="fila-kpi">
+        <div class="kpi">
+          <div class="kpi-icono ambar"><i class="bi bi-hourglass"></i></div>
+          <div><div class="kpi-numero" id="met-horas">0 h</div><div class="kpi-etiqueta">tiempo de foco</div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icono azul"><i class="bi bi-layers"></i></div>
+          <div><div class="kpi-numero" id="met-bloques">0</div><div class="kpi-etiqueta">bloques</div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icono verde"><i class="bi bi-check2-circle"></i></div>
+          <div><div class="kpi-numero" id="met-cumplimiento">0 %</div><div class="kpi-etiqueta">cumplimiento</div></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-icono rojo"><i class="bi bi-fire"></i></div>
+          <div><div class="kpi-numero" id="met-racha">0</div><div class="kpi-etiqueta">dias de racha</div></div>
+        </div>
+      </div>
+
+      <div class="dos-columnas">
+        <div class="panel">
+          <div class="panel-cabecera"><h2><i class="bi bi-bar-chart"></i> Foco por dia</h2><span class="badge-suave" id="met-rango"></span></div>
+          <div id="grafico-dias" class="grafico-dias"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-cabecera"><h2><i class="bi bi-diagram-3"></i> Por area</h2></div>
+          <div id="tabla-areas" class="tabla-areas"></div>
+        </div>
+      </div>
+
+      <div class="dos-columnas">
+        <div class="panel">
+          <div class="panel-cabecera"><h2><i class="bi bi-trophy"></i> Donde invertiste el tiempo</h2></div>
+          <div id="tabla-destacadas" class="tabla-areas"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-cabecera"><h2><i class="bi bi-lightbulb"></i> Lectura del periodo</h2></div>
+          <div id="resumen-ia" class="plan-caja"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ====================== MODAL NUEVA TAREA ====================== -->
+<div class="modal fade" id="modalTarea" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-titulo">Nueva tarea</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="f-id">
+
+        <label class="form-label">Titulo</label>
+        <input type="text" class="form-control" id="f-titulo" placeholder="Ej: Terminar el informe de redes">
+        <div class="error-campo oculto" id="err-titulo">Escribe un titulo.</div>
+
+        <div class="fila-campos">
+          <div>
+            <label class="form-label">Area</label>
+            <input list="areas" class="form-control" id="f-area" placeholder="General">
+            <datalist id="areas">
+              <option value="Universidad"></option>
+              <option value="Trabajo"></option>
+              <option value="Proyectos"></option>
+              <option value="Salud"></option>
+              <option value="Personal"></option>
+            </datalist>
+          </div>
+          <div>
+            <label class="form-label">Prioridad</label>
+            <select class="form-select" id="f-prioridad">
+              <option value="1">Alta</option>
+              <option value="2" selected>Media</option>
+              <option value="3">Baja</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fila-campos">
+          <div>
+            <label class="form-label">Fecha</label>
+            <input type="date" class="form-control" id="f-fecha">
+          </div>
+          <div>
+            <label class="form-label">Hora</label>
+            <input type="time" class="form-control" id="f-hora">
+          </div>
+        </div>
+
+        <label class="form-label">Notas</label>
+        <textarea class="form-control" id="f-notas" rows="2" placeholder="Detalles, enlaces, lo que sea"></textarea>
+
+        <div class="estimador">
+          <div>
+            <label class="form-label">Tiempo estimado (min)</label>
+            <input type="number" class="form-control" id="f-estimado" min="5" max="480" step="5" value="30">
+          </div>
+          <button class="btn btn-outline-light" id="btn-estimar"><i class="bi bi-stars"></i> Estimar</button>
+        </div>
+        <div class="estimador-resultado oculto" id="estimador-resultado"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="btn-guardar">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL PLAN DEL DIA ===================== -->
+<div class="modal fade" id="modalPlan" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Armar plan de hoy</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Cuanto tiempo tienes disponible hoy</label>
+        <div class="filtros" id="plan-minutos">
+          <button class="chip" data-min="60">1 hora</button>
+          <button class="chip activo" data-min="120">2 horas</button>
+          <button class="chip" data-min="180">3 horas</button>
+          <button class="chip" data-min="300">5 horas</button>
+        </div>
+        <p class="nota">Ordeno tus pendientes por prioridad y urgencia, y marco hasta donde alcanza tu tiempo.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-light" data-bs-dismiss="modal">Cerrar</button>
+        <button class="btn btn-primary" id="btn-generar-plan">Armar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================== MODAL CREDENCIALES NUBE UTSA ================== -->
+<div class="modal fade" id="modalNube" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Conectar con la nube de UTSA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="nota">Se guardan solo en tu computadora, en <code>datos/moodle.json</code>.
+        Se usan para leer tus tareas pendientes cada 6 horas. Nada se envia a otro lado.</p>
+
+        <label class="form-label">Recinto</label>
+        <select class="form-select" id="n-campus">
+          <option value="utsan" selected>Santiago</option>
+          <option value="utsdg">Santo Domingo</option>
+          <option value="utsdo">Santo Domingo Oriental</option>
+          <option value="utdjb">Dajabon</option>
+          <option value="utghd">Gaspar Hernandez</option>
+          <option value="utmao">Mao</option>
+          <option value="utppt">Puerto Plata</option>
+          <option value="utmoc">Moca</option>
+          <option value="utgrs">Escuela Graduados Santiago</option>
+          <option value="utgrd">Escuela Graduados Santo Domingo</option>
+        </select>
+
+        <label class="form-label" style="margin-top:12px;display:block">Matricula</label>
+        <input type="text" class="form-control" id="n-usuario" placeholder="Sin guiones">
+
+        <label class="form-label" style="margin-top:12px;display:block">Contrasena</label>
+        <input type="password" class="form-control" id="n-clave" placeholder="La de la nube">
+
+        <div class="error-campo oculto" id="err-nube"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-light" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" id="btn-guardar-nube">Guardar y sincronizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= MODAL TELEGRAM ======================= -->
+<div class="modal fade" id="modalTelegram" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Bot de Telegram</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="tg-estado" class="plan-caja" style="margin-bottom:12px"></div>
+        <p class="nota">
+          1. En Telegram busca <strong>@BotFather</strong>, manda <code>/newbot</code> y copia el token.<br>
+          2. Pegalo aqui y guarda.<br>
+          3. Abre tu bot y mandale <code>/start</code> una sola vez: queda vinculado a este chat.
+        </p>
+        <label class="form-label">Token del bot</label>
+        <input type="text" class="form-control" id="tg-token" placeholder="123456789:AAH...">
+        <div class="error-campo oculto" id="err-tg"></div>
+
+        <hr style="border-color:#242c3a;margin:18px 0">
+        <label class="form-label">Recordatorios automaticos</label>
+        <div class="fila-acciones">
+          <label class="form-check" style="display:flex;align-items:center;gap:7px;font-size:13px;margin:0">
+            <input class="form-check-input" type="checkbox" id="rec-activo" style="margin:0">
+            Activo
+          </label>
+          <input type="number" id="rec-minutos" class="form-control" min="15" max="480" step="15" style="max-width:92px" value="90">
+          <span style="font-size:12.5px;color:#8b97ad">min</span>
+          <span style="font-size:12.5px;color:#8b97ad">de</span>
+          <input type="number" id="rec-desde" class="form-control" min="0" max="23" style="max-width:78px" value="7">
+          <span style="font-size:12.5px;color:#8b97ad">a</span>
+          <input type="number" id="rec-hasta" class="form-control" min="1" max="24" style="max-width:78px" value="23">
+          <button class="btn btn-outline-light" id="btn-guardar-rec">Guardar</button>
+        </div>
+        <p class="nota" id="rec-aviso">Te aviso cada 90 minutos mientras tengas tareas
+        pendientes, solo dentro de ese horario. Cada aviso trae botones para cerrar
+        la tarea de un toque.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-light" id="btn-tg-desvincular">Desvincular chat</button>
+        <button class="btn btn-primary" id="btn-tg-guardar">Guardar token</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========================= MODAL GOOGLE ========================= -->
+<div class="modal fade" id="modalGoogle" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Google Calendar y Google Tasks</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="g-estado" class="plan-caja" style="margin-bottom:14px"></div>
+
+        <div class="paso-google">
+          <div class="paso-num">1</div>
+          <div class="paso-cuerpo">
+            <strong>Crea el acceso (una sola vez)</strong>
+            <p class="nota">
+              En <span class="enlace-moodle">console.cloud.google.com</span>: activa
+              <em>Google Calendar API</em> y <em>Google Tasks API</em>, crea un
+              OAuth client tipo <em>Desktop app</em> y descarga el JSON.
+              Pega aqui la ruta del archivo.
+            </p>
+            <div class="fila-acciones">
+              <input type="text" id="g-ruta" class="form-control" placeholder="C:\Users\anime\Downloads\client_secret_....json">
+              <button class="btn btn-outline-light" id="btn-g-cliente">Cargar</button>
+            </div>
+            <div class="error-campo oculto" id="err-g-cliente"></div>
+          </div>
+        </div>
+
+        <div class="paso-google">
+          <div class="paso-num">2</div>
+          <div class="paso-cuerpo">
+            <strong>Autoriza tu cuenta</strong>
+            <p class="nota">Se abre Google en otra pestaña. Al aprobar, Google vuelve
+            sola a esta app y queda conectada.</p>
+            <button class="btn btn-primary" id="btn-g-autorizar">Autorizar con Google</button>
+            <div class="error-campo oculto" id="err-g-autorizar"></div>
+          </div>
+        </div>
+
+        <div class="paso-google">
+          <div class="paso-num">3</div>
+          <div class="paso-cuerpo">
+            <strong>Sincronizar</strong>
+            <p class="nota">Cada tarea con fecha se crea como evento en tu calendario y
+            como tarea en Google Tasks. Si editas aca, alla se actualiza.</p>
+            <div class="fila-acciones">
+              <button class="btn btn-primary" id="btn-g-sync">Sincronizar ahora</button>
+              <button class="btn btn-outline-light" id="btn-g-desconectar">Desconectar</button>
+            </div>
+            <div class="error-campo oculto" id="err-g-sync"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== MODAL SERVIDOR ======================== -->
+<div class="modal fade" id="modalServidor" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Servidor y acceso</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="s-estado" class="plan-caja" style="margin-bottom:14px"></div>
+
+        <label class="form-label">Clave de acceso</label>
+        <input type="password" class="form-control" id="s-clave" placeholder="Dejala vacia para quitarla">
+        <p class="nota">Se guarda cifrada (PBKDF2). Si pones clave, la app la pide al abrir.</p>
+
+        <div class="form-check" style="margin:10px 0">
+          <input class="form-check-input" type="checkbox" id="s-red">
+          <label class="form-check-label" for="s-red" style="font-size:13px">
+            Permitir acceso desde otros equipos de mi red (telefono, tablet)
+          </label>
+        </div>
+
+        <label class="form-label">Puerto</label>
+        <input type="number" class="form-control" id="s-puerto" min="1024" max="65535" value="8630">
+
+        <div class="error-campo oculto" id="err-servidor"></div>
+        <p class="nota" style="margin-top:12px">Los cambios de red o puerto necesitan reiniciar la app.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-light" id="btn-salir">Cerrar sesion</button>
+        <button class="btn btn-primary" id="btn-guardar-servidor">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="aviso" id="aviso"></div>
+
+<script src="/assets/bootstrap.bundle.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

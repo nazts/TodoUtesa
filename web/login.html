@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TodoUtesa - acceso</title>
+<link rel="stylesheet" href="/assets/bootstrap.min.css">
+<style>
+  body {
+    background: #0b0e14;
+    color: #e6ebf5;
+    font-family: "Segoe UI", system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .caja {
+    width: 100%;
+    max-width: 360px;
+    background: #131822;
+    border: 1px solid #242c3a;
+    border-radius: 16px;
+    padding: 30px 26px;
+    text-align: center;
+  }
+  .icono {
+    width: 46px; height: 46px; margin: 0 auto 14px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #6c8cff, #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  h1 { font-size: 19px; margin: 0 0 4px; font-weight: 600; }
+  p { font-size: 12.5px; color: #8b97ad; margin: 0 0 18px; }
+  input {
+    background: #1a2030;
+    border: 1px solid #242c3a;
+    color: #e6ebf5;
+    border-radius: 10px;
+    width: 100%;
+    padding: 10px 13px;
+    font-size: 14px;
+    outline: none;
+  }
+  input:focus { border-color: #6c8cff; box-shadow: 0 0 0 3px rgba(108,140,255,.14); }
+  button {
+    width: 100%;
+    margin-top: 12px;
+    background: #6c8cff;
+    border: none;
+    color: #fff;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  button:disabled { opacity: .6; }
+  .error { color: #f87171; font-size: 12px; margin-top: 10px; min-height: 16px; }
+</style>
+</head>
+<body>
+  <form class="caja" id="formulario">
+    <div class="icono">&#9634;</div>
+    <h1>TodoUtesa</h1>
+    <p>Escribe la clave de acceso</p>
+    <input type="password" id="clave" placeholder="Clave" autocomplete="current-password" autofocus>
+    <button type="submit" id="boton">Entrar</button>
+    <div class="error" id="error"></div>
+  </form>
+
+<script>
+document.getElementById("formulario").addEventListener("submit", function (evento) {
+  evento.preventDefault();
+  var boton = document.getElementById("boton");
+  var error = document.getElementById("error");
+  error.textContent = "";
+  boton.disabled = true;
+  boton.textContent = "Entrando...";
+
+  fetch("/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ clave: document.getElementById("clave").value })
+  }).then(function (respuesta) {
+    return respuesta.json().then(function (datos) {
+      if (respuesta.ok && datos.ok) {
+        window.location.href = "/";
+        return;
+      }
+      throw new Error(datos.error || "Clave incorrecta");
+    });
+  }).catch(function (fallo) {
+    error.textContent = fallo.message;
+    boton.disabled = false;
+    boton.textContent = "Entrar";
+  });
+});
+</script>
+</body>
+</html>

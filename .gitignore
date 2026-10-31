@@ -1,0 +1,23 @@
+# datos personales y credenciales: NUNCA al repositorio
+datos/
+*.db
+*.db.bak
+*.enc
+moodle.json
+telegram.json
+google_cliente.json
+google_token.json
+google_pendiente.json
+sesiones.json
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
