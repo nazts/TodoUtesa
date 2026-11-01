@@ -674,7 +674,7 @@ def sincronizar(con, meses=3, incluir_vencidas=True):
 
     for registro in datos["actividades"]:
         fila = con.execute(
-            "SELECT id, fecha, titulo, estado, COALESCE(perdida,0) AS perdida"
+            "SELECT id, fecha, hora, titulo, estado, COALESCE(perdida,0) AS perdida"
             " FROM tareas WHERE externa_id = ?",
             (registro["clave"],)).fetchone()
 
@@ -720,12 +720,17 @@ def sincronizar(con, meses=3, incluir_vencidas=True):
             continue
 
         perdida_ahora = 1 if registro.get("perdida") else 0
-        if (fila["fecha"] != registro["fecha"] or fila["titulo"] != registro["titulo"]
+
+        # si la nube deja de reportar la fecha, se conserva la ultima conocida
+        fecha_final = registro["fecha"] or fila["fecha"]
+        hora_final = registro["hora"] or fila["hora"]
+
+        if (fila["fecha"] != fecha_final or fila["titulo"] != registro["titulo"]
                 or fila["perdida"] != perdida_ahora):
             con.execute(
                 "UPDATE tareas SET titulo = ?, fecha = ?, hora = ?, notas = ?,"
                 " estimado_min = ?, perdida = ? WHERE id = ?",
-                (registro["titulo"], registro["fecha"], registro["hora"],
+                (registro["titulo"], fecha_final, hora_final,
                  texto_notas(registro), estimado_de(registro["tipo"], registro["titulo"]),
                  perdida_ahora, fila["id"]))
             actualizadas += 1
