@@ -11,6 +11,7 @@ import re
 import secrets
 import socket
 import sqlite3
+import sys
 import threading
 import time
 import webbrowser
@@ -1885,8 +1886,9 @@ def main():
     hilo_recordatorios.start()
 
     servidor = None
-    host = host_servidor()
-    puerto_base = puerto_servidor()
+    host_argumento, puerto_argumento = leer_argumentos()
+    host = host_argumento or host_servidor()
+    puerto_base = puerto_argumento or puerto_servidor()
     for puerto in range(puerto_base, puerto_base + 6):
         try:
             servidor = ServidorLocal((host, puerto), Handler)
@@ -1907,7 +1909,11 @@ def main():
         if direccion:
             print(" Red local: http://" + direccion + ":" + str(puerto))
         if not hay_clave():
-            print(" AVISO: abierto a la red sin clave de acceso.")
+            print(" AVISO: abierto a la red SIN clave de acceso.")
+            print("        pon una en el menu Servidor de la app.")
+    elif es_termux():
+        print(" Solo este telefono.")
+        print(" Para abrirlo a otros equipos:  python servidor.py --red")
     print(" Cierra esta ventana para detener.")
     print("=" * 56, flush=True)
     if not os.environ.get("NO_BROWSER") and host == "127.0.0.1":
@@ -2038,6 +2044,50 @@ def ip_local():
         return direccion
     except Exception:
         return ""
+
+
+def es_termux():
+    return "com.termux" in os.environ.get("PREFIX", "")
+
+
+def imprimir_ayuda():
+    print("TodoUtesa")
+    print("")
+    print("  python servidor.py                 solo este equipo (127.0.0.1)")
+    print("  python servidor.py --red           toda la red local (0.0.0.0)")
+    print("  python servidor.py --local         volver a solo este equipo")
+    print("  python servidor.py --host 0.0.0.0  host explicito")
+    print("  python servidor.py --puerto 9000   cambiar el puerto")
+    print("  python diagnostico.py              por que no me entra el sitio")
+    print("  python servidor.py --ayuda         esta ayuda")
+
+
+def leer_argumentos():
+    host = ""
+    puerto = 0
+    lista = sys.argv[1:]
+    i = 0
+    while i < len(lista):
+        argumento = lista[i]
+        if argumento in ("--red", "--lan"):
+            host = "0.0.0.0"
+        elif argumento in ("--local", "--solo-local"):
+            host = "127.0.0.1"
+        elif argumento == "--host" and i + 1 < len(lista):
+            i = i + 1
+            host = lista[i]
+        elif argumento == "--puerto" and i + 1 < len(lista):
+            i = i + 1
+            puerto = a_entero(lista[i], 0)
+        elif argumento in ("-h", "--ayuda", "--help"):
+            imprimir_ayuda()
+            sys.exit(0)
+        i = i + 1
+
+    if host and host not in ("127.0.0.1", "0.0.0.0"):
+        print("Host invalido, uso 127.0.0.1")
+        host = "127.0.0.1"
+    return host, puerto
 
 
 def estado_servidor():

@@ -124,6 +124,15 @@ En el telefono: menu lateral -> **Servidor** -> pon una clave -> marca
 La misma pantalla te muestra la direccion, algo como
 `http://192.168.1.50:8630`. Abrela desde la PC conectada al mismo wifi.
 
+Forma rapida por consola, sin tocar la interfaz:
+
+```bash
+python servidor.py --red
+```
+
+Si aun asi no entra, o quieres acceder **desde fuera de tu red**, mira
+[ACCESO-REMOTO.md](ACCESO-REMOTO.md) y corre `python diagnostico.py`.
+
 ---
 
 ## 2. Windows

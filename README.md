@@ -11,6 +11,9 @@ sin instalar ni una libreria.
 **Instalacion paso a paso (Windows, Android/Termux, Linux, macOS, VPS) ->
 [INSTALACION.md](INSTALACION.md)**
 
+**No te entra el sitio desde otro dispositivo? -> [ACCESO-REMOTO.md](ACCESO-REMOTO.md)**
+(misma wifi, Tailscale, Cloudflare Tunnel) y `python diagnostico.py`.
+
 ## Lo que hace
 
 | Modulo | Que resuelve |
