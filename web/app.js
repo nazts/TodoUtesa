@@ -952,7 +952,7 @@ function cargarRacha() {
   }).catch(function () {});
 }
 
-// ------------------------------------------------------------- nube UTSA
+// ----------------------------------------------------------------- Moodle
 
 var modalNube = null;
 var estadoNube = { configurado: false };
@@ -966,47 +966,53 @@ function cargarNube() {
     caja.classList.remove("error", "activa");
 
     if (!datos.configurado) {
-      texto.textContent = "Nube UTSA: sin configurar. Pon tus credenciales y las tareas entran solas.";
+      texto.textContent = "Moodle: sin conectar. Pon la direccion de tu plataforma y las tareas entran solas.";
       return;
     }
 
     var ultimo = datos.ultimo || {};
     if (ultimo.ok === false) {
       caja.classList.add("error");
-      texto.textContent = "Nube UTSA: " + (ultimo.error || "fallo la ultima sincronizacion");
+      texto.textContent = "Moodle: " + (ultimo.error || "fallo la ultima sincronizacion");
       return;
     }
 
     if (datos.ultima) {
       caja.classList.add("activa");
-      texto.textContent = "Nube UTSA (" + (datos.campus_nombre || "") + "): sincronizada el " +
+      texto.textContent = "Moodle (" + (datos.sitio || "") + "): sincronizada el " +
         fechaLegible(datos.ultima.substring(0, 10)) + " a las " + datos.ultima.substring(11, 16) +
         " - " + (ultimo.nuevas || 0) + " nuevas de " + (ultimo.revisadas || 0) + " actividades";
       return;
     }
 
-    texto.textContent = "Nube UTSA (" + (datos.campus_nombre || "") + "): conectada, sin sincronizar todavia.";
+    texto.textContent = "Moodle (" + (datos.sitio || "") + "): conectado, sin sincronizar todavia.";
   }).catch(function () {});
 }
 
 function abrirModalNube() {
   if (!modalNube) { modalNube = new bootstrap.Modal($("#modalNube")); }
   $("#err-nube").classList.add("oculto");
-  if (estadoNube.configurado) {
-    $("#n-campus").value = estadoNube.campus || "utsan";
-    $("#n-usuario").value = estadoNube.usuario || "";
-  }
+  $("#n-base").value = estadoNube.configurado ? (estadoNube.base || "") : "";
+  $("#n-ruta").value = estadoNube.configurado ? (estadoNube.ruta_login || "") : "";
+  $("#n-campus").value = estadoNube.configurado ? (estadoNube.campus || "") : "";
+  $("#n-usuario").value = estadoNube.configurado ? (estadoNube.usuario || "") : "";
   $("#n-clave").value = "";
   modalNube.show();
 }
 
 function guardarNube() {
+  var base = $("#n-base").value.trim();
   var usuario = $("#n-usuario").value.trim();
   var clave = $("#n-clave").value.trim();
   var error = $("#err-nube");
 
+  if (!base) {
+    error.textContent = "Necesito la direccion de tu Moodle (por ejemplo https://moodle.tuinstitucion.edu).";
+    error.classList.remove("oculto");
+    return;
+  }
   if (!usuario || !clave) {
-    error.textContent = "Necesito la matricula y la contrasena.";
+    error.textContent = "Necesito el usuario y la contrasena.";
     error.classList.remove("oculto");
     return;
   }
@@ -1017,19 +1023,21 @@ function guardarNube() {
   boton.textContent = "Conectando...";
 
   api("/api/moodle/config", "POST", {
-    campus: $("#n-campus").value,
+    base: base,
+    ruta_login: $("#n-ruta").value.trim(),
+    campus: $("#n-campus").value.trim(),
     usuario: usuario,
     clave: clave
   }).then(function (resultado) {
     boton.disabled = false;
     boton.textContent = "Guardar y sincronizar";
     if (!resultado.ok) {
-      error.textContent = resultado.error || "No se pudo conectar con la nube.";
+      error.textContent = resultado.error || "No se pudo conectar con tu Moodle.";
       error.classList.remove("oculto");
       return;
     }
     modalNube.hide();
-    avisar("Conectado: " + resultado.nuevas + " tareas nuevas de la nube");
+    avisar("Conectado: " + resultado.nuevas + " tareas nuevas");
     cargarNube();
     refrescarVista();
   }).catch(function (e) {

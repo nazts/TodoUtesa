@@ -125,7 +125,7 @@
       <div class="barra-nube">
         <div class="nube-info">
           <i class="bi bi-cloud-arrow-down" id="nube-icono"></i>
-          <span id="nube-texto">Nube UTSA: sin configurar</span>
+          <span id="nube-texto">Moodle: sin configurar</span>
         </div>
         <div class="nube-botones">
           <button class="btn-mini" id="btn-nube-sync"><i class="bi bi-arrow-repeat"></i> Sincronizar</button>
@@ -446,37 +446,36 @@
   </div>
 </div>
 
-<!-- ================== MODAL CREDENCIALES NUBE UTSA ================== -->
+<!-- ==================== MODAL CONEXION CON MOODLE ==================== -->
 <div class="modal fade" id="modalNube" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Conectar con la nube de UTSA</h5>
+        <h5 class="modal-title">Conectar con tu Moodle</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <p class="nota">Se guardan solo en tu computadora, en <code>datos/moodle.json</code>.
-        Se usan para leer tus tareas pendientes cada 6 horas. Nada se envia a otro lado.</p>
+        <p class="nota">Funciona con cualquier plataforma Moodle. Todo se guarda solo en tu
+        equipo, en <code>datos/moodle.json</code>. Nada se envia a ningun otro lado.</p>
 
-        <label class="form-label">Recinto</label>
-        <select class="form-select" id="n-campus">
-          <option value="utsan" selected>Santiago</option>
-          <option value="utsdg">Santo Domingo</option>
-          <option value="utsdo">Santo Domingo Oriental</option>
-          <option value="utdjb">Dajabon</option>
-          <option value="utghd">Gaspar Hernandez</option>
-          <option value="utmao">Mao</option>
-          <option value="utppt">Puerto Plata</option>
-          <option value="utmoc">Moca</option>
-          <option value="utgrs">Escuela Graduados Santiago</option>
-          <option value="utgrd">Escuela Graduados Santo Domingo</option>
-        </select>
+        <label class="form-label">Direccion de tu Moodle</label>
+        <input type="text" class="form-control" id="n-base" placeholder="https://moodle.tuinstitucion.edu">
 
-        <label class="form-label" style="margin-top:12px;display:block">Matricula</label>
-        <input type="text" class="form-control" id="n-usuario" placeholder="Sin guiones">
+        <label class="form-label" style="margin-top:12px;display:block">Usuario o matricula</label>
+        <input type="text" class="form-control" id="n-usuario" placeholder="Tu usuario">
 
         <label class="form-label" style="margin-top:12px;display:block">Contrasena</label>
-        <input type="password" class="form-control" id="n-clave" placeholder="La de la nube">
+        <input type="password" class="form-control" id="n-clave" placeholder="Tu contrasena">
+
+        <details style="margin-top:14px">
+          <summary style="cursor:pointer;font-size:12.5px;color:#8b97ad">Opciones avanzadas</summary>
+          <label class="form-label" style="margin-top:12px;display:block">Ruta del formulario de entrada</label>
+          <input type="text" class="form-control" id="n-ruta" placeholder="/login/index.php">
+          <p class="nota">Casi siempre es <code>/login/index.php</code>. Cambiala solo si tu
+          institucion usa otra.</p>
+          <label class="form-label">Recinto / campus (solo si tu institucion lo pide)</label>
+          <input type="text" class="form-control" id="n-campus" placeholder="Opcional">
+        </details>
 
         <div class="error-campo oculto" id="err-nube"></div>
       </div>
@@ -556,7 +555,7 @@
               Pega aqui la ruta del archivo.
             </p>
             <div class="fila-acciones">
-              <input type="text" id="g-ruta" class="form-control" placeholder="C:\Users\anime\Downloads\client_secret_....json">
+              <input type="text" class="form-control" id="g-ruta" placeholder="C:\Users\tu-usuario\Downloads\client_secret_....json">
               <button class="btn btn-outline-light" id="btn-g-cliente">Cargar</button>
             </div>
             <div class="error-campo oculto" id="err-g-cliente"></div>

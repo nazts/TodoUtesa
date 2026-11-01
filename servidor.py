@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Habitos - app web local de tareas + pomodoro + seguimiento.
+"""TodoUtesa - app web local de tareas + pomodoro + seguimiento.
 Backend solo con la biblioteca estandar de Python (http.server + sqlite3).
 Sin dependencias, portable a cualquier PC / VPS / Termux.
 """
@@ -153,7 +153,7 @@ def sincronizar_moodle(incluir_vencidas=False):
 
     if resultado.get("ok") and resultado.get("nuevas"):
         titulos = resultado.get("nuevas_titulos") or []
-        texto = "Tareas nuevas en la nube: %d" % resultado["nuevas"]
+        texto = "Tareas nuevas en Moodle: %d" % resultado["nuevas"]
         if titulos:
             texto += "\n" + "\n".join("- " + t for t in titulos)
         avisar_telegram(texto)
@@ -883,7 +883,7 @@ AYUDA = (
     "/hecho <numero> - marcar hecha\n"
     "/agendar <numero> <2026-11-05 18:00> - cambiar fecha\n"
     "/pomo <numero> [minutos] - registrar bloque de foco\n"
-    "/sync - traer novedades de la nube\n"
+    "/sync - traer novedades de Moodle\n"
     "/nota <texto> - guardar apunte\n"
     "/notas - ultimos apuntes\n"
     "/buscar <texto>\n\n"
@@ -1795,13 +1795,23 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if ruta == "/api/moodle/config":
+            base = (datos.get("base") or "").strip()
+            ruta_login = (datos.get("ruta_login") or "").strip()
             usuario = (datos.get("usuario") or "").strip()
             clave = (datos.get("clave") or "").strip()
-            campus = (datos.get("campus") or "utsan").strip()
-            if not usuario or not clave:
-                self._json(400, {"error": "Faltan la matricula y la contrasena"})
+            campus = (datos.get("campus") or "").strip()
+            if not base:
+                self._json(400, {"error": "Falta la direccion de tu Moodle "
+                                          "(por ejemplo https://moodle.tuinstitucion.edu)"})
                 return
-            moodle.guardar_configuracion(campus, usuario, clave)
+            if not usuario or not clave:
+                self._json(400, {"error": "Faltan el usuario y la contrasena"})
+                return
+            try:
+                moodle.guardar_configuracion(base, usuario, clave, ruta_login, campus)
+            except Exception as error:
+                self._json(400, {"error": str(error)})
+                return
             self._json(200, sincronizar_moodle())
             return
 

@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Sincronizacion con la nube de UTSA (Moodle) para traer tareas pendientes.
+"""Sincronizacion con cualquier Moodle para traer tareas pendientes.
 
-Solo biblioteca estandar. Credenciales en datos/moodle.json:
-    {"campus": "utsan", "usuario": "...", "clave": "..."}
+Solo biblioteca estandar. La conexion se guarda en datos/moodle.json:
+    {"base": "https://moodle.tuinstitucion.edu",
+     "ruta_login": "/login/index.php",
+     "usuario": "...", "clave": "...", "campus": ""}
+
+`campus` es opcional: solo lo piden algunas instituciones (UTESA por ejemplo).
+Si el formulario de entrada tiene un campo llamado "campus", se envia.
 
 Cruza cuatro fuentes por curso para no dejar nada fuera:
   1. /course/view.php?id=CID   -> lista completa de actividades + estado de
@@ -32,7 +37,16 @@ from difflib import SequenceMatcher
 RUTA_BASE = os.path.dirname(os.path.abspath(__file__))
 RUTA_DATOS = os.path.join(RUTA_BASE, "datos")
 RUTA_CONFIG = os.path.join(RUTA_DATOS, "moodle.json")
-URL_BASE = "https://nube.utesa.edu"
+URL_BASE = ""
+RUTA_LOGIN_POR_DEFECTO = "/login/index.php"
+
+# comodidad: presets publicos de instituciones conocidas (no son datos de nadie)
+PRESETS = [
+    {"nombre": "UTESA (Republica Dominicana)",
+     "base": "https://nube.utesa.edu",
+     "ruta_login": "/local/entrada/index.php",
+     "campus": "utsan"},
+]
 
 NAVEGADOR = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
              "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
@@ -143,7 +157,13 @@ def parsear_fecha(texto):
 def limpiar_nombre_curso(texto):
     limpio = html.unescape(texto or "").replace("\xa0", " ")
     limpio = re.sub(r"\s+", " ", limpio).strip()
-    for corte in [" (Presencial", " (Virtual", " (Semipresencial", "_UTSAN", " : ", " =>"]:
+
+    # nombres tipo "INF-172_UTSAN_PROGRAMACION": se queda solo con el codigo
+    candidato = re.sub(r"_[A-Z]{3,8}_.*", "", limpio)
+    if len(candidato) >= 3:
+        limpio = candidato
+
+    for corte in [" (Presencial", " (Virtual", " (Semipresencial", " : ", " =>"]:
         if corte in limpio:
             limpio = limpio.split(corte)[0]
             break
@@ -172,7 +192,7 @@ def limpiar_titulo(texto):
     limpio = limpio.strip(" -:")
 
     if not limpio:
-        return "Actividad de la nube"
+        return "Actividad de Moodle"
     return limpio[0].upper() + limpio[1:]
 
 
@@ -190,6 +210,23 @@ def estimado_de(tipo, titulo):
 
 # -------------------------------------------------------------------- config
 
+def normalizar_base(texto):
+    texto = (texto or "").strip()
+    if not texto:
+        return ""
+    if not texto.startswith("http"):
+        texto = "https://" + texto
+    return texto.rstrip("/")
+
+
+def aplicar_base(config):
+    """Deja URL_BASE apuntando al Moodle configurado."""
+    global URL_BASE
+    URL_BASE = normalizar_base(config.get("base"))
+    return URL_BASE
+
+
+
 def cargar_configuracion():
     if not os.path.isfile(RUTA_CONFIG):
         return None
@@ -200,18 +237,34 @@ def cargar_configuracion():
         return None
     if not datos.get("usuario") or not datos.get("clave"):
         return None
-    if not datos.get("campus"):
-        datos["campus"] = "utsan"
+
+    datos["base"] = normalizar_base(datos.get("base"))
+    if not datos["base"]:
+        # instalaciones anteriores solo guardaban el campus de UTESA
+        if datos.get("campus"):
+            datos["base"] = "https://nube.utesa.edu"
+            datos["ruta_login"] = datos.get("ruta_login") or "/local/entrada/index.php"
+        else:
+            return None
+
+    datos["ruta_login"] = datos.get("ruta_login") or RUTA_LOGIN_POR_DEFECTO
+    datos["campus"] = (datos.get("campus") or "").strip()
+    aplicar_base(datos)
     return datos
 
 
-def guardar_configuracion(campus, usuario, clave):
+def guardar_configuracion(base, usuario, clave, ruta_login="", campus=""):
     if not os.path.isdir(RUTA_DATOS):
         os.makedirs(RUTA_DATOS)
+    base = normalizar_base(base)
+    if not base:
+        raise ErrorMoodle("Falta la direccion de tu Moodle")
     datos = {
-        "campus": (campus or "utsan").strip(),
+        "base": base,
+        "ruta_login": (ruta_login or RUTA_LOGIN_POR_DEFECTO).strip(),
         "usuario": (usuario or "").strip(),
         "clave": (clave or "").strip(),
+        "campus": (campus or "").strip(),
     }
     with open(RUTA_CONFIG, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, ensure_ascii=False, indent=2)
@@ -219,6 +272,7 @@ def guardar_configuracion(campus, usuario, clave):
         os.chmod(RUTA_CONFIG, 0o600)
     except OSError:
         pass
+    aplicar_base(datos)
     return datos
 
 
@@ -226,10 +280,15 @@ def estado_configuracion():
     config = cargar_configuracion()
     if not config:
         return {"configurado": False}
+    sitio = config["base"].replace("https://", "").replace("http://", "")
+    sitio = sitio.split("/")[0]
     return {
         "configurado": True,
+        "base": config.get("base"),
+        "sitio": sitio,
+        "ruta_login": config.get("ruta_login"),
         "campus": config.get("campus"),
-        "campus_nombre": CAMPUS.get(config.get("campus"), config.get("campus")),
+        "campus_nombre": CAMPUS.get(config.get("campus"), config.get("campus") or ""),
         "usuario": config.get("usuario"),
     }
 
@@ -254,31 +313,37 @@ class SesionMoodle(object):
             respuesta = self.op.open(url, timeout=60)
             return respuesta.read().decode("utf-8", "replace")
         except urllib.error.HTTPError as error:
-            raise ErrorMoodle("La nube respondio con error %s" % error.code)
+            raise ErrorMoodle("El sitio respondio con error %s" % error.code)
         except Exception as error:
-            raise ErrorMoodle("No se pudo conectar con la nube: %s" % error)
+            raise ErrorMoodle("No se pudo conectar con %s: %s" % (URL_BASE, error))
 
     def entrar(self):
-        pagina = self.abrir("/local/entrada/")
+        ruta = self.config.get("ruta_login") or RUTA_LOGIN_POR_DEFECTO
+        pagina = self.abrir(ruta)
         encontrado = re.search(r'name="logintoken"\s+value="([^"]+)"', pagina)
         if not encontrado:
-            raise ErrorMoodle("No encontre el formulario de entrada. La nube cambio de pagina.")
+            raise ErrorMoodle("No encontre el formulario de entrada en " + ruta +
+                              ". Revisa la direccion de tu Moodle y la ruta del formulario.")
 
-        cuerpo = urllib.parse.urlencode({
-            "campus": self.config.get("campus", "utsan"),
+        campos = {
             "username": self.config["usuario"],
             "password": self.config["clave"],
             "logintoken": encontrado.group(1),
-        }).encode("utf-8")
+        }
+        # solo algunas instituciones piden el recinto
+        if self.config.get("campus") and 'name="campus"' in pagina:
+            campos["campus"] = self.config["campus"]
+
+        cuerpo = urllib.parse.urlencode(campos).encode("utf-8")
 
         try:
-            respuesta = self.op.open(URL_BASE + "/local/entrada/index.php", cuerpo, timeout=60)
+            respuesta = self.op.open(URL_BASE + ruta, cuerpo, timeout=60)
             pagina = respuesta.read().decode("utf-8", "replace")
         except Exception as error:
             raise ErrorMoodle("No se pudo iniciar sesion: %s" % error)
 
         if "/login/logout.php" not in pagina:
-            raise ErrorMoodle("La nube rechazo la matricula o la contrasena.")
+            raise ErrorMoodle("La plataforma rechazo el usuario o la contrasena.")
 
     # ---------------------------------------------------------- cursos
 
@@ -760,7 +825,7 @@ def sincronizar(con, meses=3, incluir_vencidas=True):
 
 
 def texto_notas(registro):
-    partes = ["Nube UTSA - " + (registro["curso"] or "Universidad")]
+    partes = ["Moodle - " + (registro["curso"] or "Curso")]
     if registro.get("detalle_entrega"):
         partes.append("Estado: " + registro["detalle_entrega"])
     if registro.get("fecha"):

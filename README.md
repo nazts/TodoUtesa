@@ -26,7 +26,7 @@ sin instalar ni una libreria.
 | **Seguimiento** | Semana y mes: horas de foco, cumplimiento, racha, por area |
 | **Notas** | Captura rapida con buscador y opcion de ligarlas a una tarea |
 | **Racha** | Dias seguidos activos, ultimos 7 dias, record e insignias |
-| **Nube UTESA** | Entra a Moodle y trae tareas, cuestionarios, foros y recursos pendientes, cruzando 4 fuentes |
+| **Moodle** | Se conecta a **cualquier** plataforma Moodle y trae tareas, cuestionarios, foros y recursos pendientes, cruzando 4 fuentes |
 | **Telegram** | Comandos para agendar, cerrar y consultar; avisos automaticos con botones |
 | **Google** | Cada tarea con fecha se vuelve evento en Calendar y tarea en Tasks |
 
@@ -81,10 +81,22 @@ Sin clave no deja abrirlo a la red, a proposito. Para internet abierto hace
 falta ademas un tunel o un proxy con HTTPS (Tailscale, Cloudflare Tunnel,
 Nginx + Let's Encrypt).
 
-## Conectar la nube de UTESA
+## Conectar tu Moodle (cualquier institucion)
 
-Menu lateral -> **Tareas** -> **Credenciales** de la barra de la nube. Pide
-recinto, matricula y contrasena. El modulo cruza:
+Menu lateral -> **Tareas** -> boton de credenciales en la barra superior. Solo
+pide tres cosas:
+
+| Campo | Que poner |
+|---|---|
+| **Direccion** | la URL de tu plataforma, por ejemplo `https://moodle.tuinstitucion.edu` |
+| **Usuario** | tu usuario o matricula |
+| **Contrasena** | la de la plataforma |
+
+En **Opciones avanzadas** estan la ruta del formulario (por defecto
+`/login/index.php`) y el recinto, que solo piden algunas instituciones
+(UTESA, por ejemplo, usa `/local/entrada/index.php` y el codigo de recinto).
+
+El modulo cruza:
 
 | Fuente | Que aporta |
 |---|---|

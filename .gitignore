@@ -10,6 +10,9 @@ google_token.json
 google_pendiente.json
 sesiones.json
 
+# notas de desarrollo personales
+LEEME.md
+
 # python
 __pycache__/
 *.py[cod]
