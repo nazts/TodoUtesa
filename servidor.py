@@ -25,7 +25,8 @@ import telegram
 RUTA_BASE = os.path.dirname(os.path.abspath(__file__))
 RUTA_WEB = os.path.join(RUTA_BASE, "web")
 RUTA_DATOS = os.path.join(RUTA_BASE, "datos")
-RUTA_DB = os.path.join(RUTA_DATOS, "habitos.db")
+RUTA_DB = os.path.join(RUTA_DATOS, "todoutesa.db")
+RUTA_DB_ANTERIOR = os.path.join(RUTA_DATOS, "habitos.db")
 PUERTO_INICIAL = 8630
 HORAS_ENTRE_SINCRONIAS = 6
 
@@ -109,6 +110,15 @@ def conectar():
 def iniciar_db():
     if not os.path.isdir(RUTA_DATOS):
         os.makedirs(RUTA_DATOS)
+
+    # migracion: versiones anteriores guardaban en habitos.db
+    if not os.path.isfile(RUTA_DB) and os.path.isfile(RUTA_DB_ANTERIOR):
+        try:
+            os.rename(RUTA_DB_ANTERIOR, RUTA_DB)
+            print("[datos] base migrada de habitos.db a todoutesa.db", flush=True)
+        except OSError as error:
+            print("[datos] no pude renombrar la base:", error, flush=True)
+
     con = conectar()
     con.executescript(ESQUEMA)
 

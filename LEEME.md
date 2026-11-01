@@ -183,7 +183,7 @@ web/index.html     interfaz
 web/app.js         logica del cliente
 web/app.css        estilos
 assets/            Bootstrap 5 + Bootstrap Icons locales (funciona sin internet)
-datos/habitos.db   base de datos (se crea sola)
+datos/todoutesa.db   base de datos (se crea sola)
 datos/moodle.json  credenciales de la nube (texto plano, solo local)
 datos/telegram.json token del bot y chat vinculado
 ```
@@ -205,7 +205,7 @@ datos/telegram.json token del bot y chat vinculado
 
 ## Respaldo
 
-Copiar `datos/habitos.db`. Eso es todo el estado.
+Copiar `datos/todoutesa.db`. Eso es todo el estado.
 
 ## Estado del proyecto
 

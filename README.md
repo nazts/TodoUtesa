@@ -8,6 +8,9 @@ Hecho para el dia a dia de un estudiante que trabaja: las tareas se traen solas
 de la plataforma, se avisan por Telegram cada 90 minutos y todo corre en Python
 sin instalar ni una libreria.
 
+**Instalacion paso a paso (Windows, Android/Termux, Linux, macOS, VPS) ->
+[INSTALACION.md](INSTALACION.md)**
+
 ## Lo que hace
 
 | Modulo | Que resuelve |
