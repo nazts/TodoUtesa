@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """TodoUtesa - app web local de tareas + pomodoro + seguimiento.
 Backend solo con la biblioteca estandar de Python (http.server + sqlite3).
-Sin dependencias, portable a cualquier PC / VPS / Termux.
+Sin dependencias, portable a Windows, Linux, macOS y VPS.
 """
 import hashlib
 import hmac
@@ -1921,9 +1921,6 @@ def main():
         if not hay_clave():
             print(" AVISO: abierto a la red SIN clave de acceso.")
             print("        pon una en el menu Servidor de la app.")
-    elif es_termux():
-        print(" Solo este telefono.")
-        print(" Para abrirlo a otros equipos:  python servidor.py --red")
     print(" Cierra esta ventana para detener.")
     print("=" * 56, flush=True)
     if not os.environ.get("NO_BROWSER") and host == "127.0.0.1":
@@ -2054,10 +2051,6 @@ def ip_local():
         return direccion
     except Exception:
         return ""
-
-
-def es_termux():
-    return "com.termux" in os.environ.get("PREFIX", "")
 
 
 def imprimir_ayuda():

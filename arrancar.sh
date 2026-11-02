@@ -1,5 +1,5 @@
 #!/bin/sh
-# TodoUtesa - arranque portable (Linux, macOS, VPS, Termux)
+# TodoUtesa - arranque portable (Linux, macOS, VPS)
 cd "$(dirname "$0")" || exit 1
 
 PY=""
@@ -12,7 +12,6 @@ done
 
 if [ -z "$PY" ]; then
     echo "No encontre Python 3."
-    echo "  Termux:  pkg install python"
     echo "  Debian:  sudo apt install python3"
     exit 1
 fi

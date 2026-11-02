@@ -8,7 +8,7 @@ Hecho para el dia a dia de un estudiante que trabaja: las tareas se traen solas
 de la plataforma, se avisan por Telegram cada 90 minutos y todo corre en Python
 sin instalar ni una libreria.
 
-**Instalacion paso a paso (Windows, Android/Termux, Linux, macOS, VPS) ->
+**Instalacion paso a paso (Windows, Linux, macOS, VPS) ->
 [INSTALACION.md](INSTALACION.md)**
 
 **No te entra el sitio desde otro dispositivo? -> [ACCESO-REMOTO.md](ACCESO-REMOTO.md)**
@@ -34,8 +34,8 @@ sin instalar ni una libreria.
 
 Backend en **Python 3 estandar** (`http.server` + `sqlite3` + `urllib`), sin
 Flask, sin requests, sin ORM. El frontend es HTML + Bootstrap servido desde
-`assets/` (sin CDN, funciona sin internet). Eso lo hace portable a Windows,
-Linux, macOS, VPS y Termux sin `pip install`.
+`assets/` (sin CDN, funciona sin internet). Eso lo hace portable a **Windows,
+Linux y macOS** (y a un VPS Linux) sin `pip install`.
 
 ## Arrancar
 
@@ -47,19 +47,6 @@ Doble clic en `Iniciar.bat`.
 sh arrancar.sh
 ```
 
-### Termux (Android)
-```bash
-pkg update && pkg install -y python
-cd TodoUtesa
-sh arrancar.sh
-```
-Para que no se detenga al bloquear el telefono:
-```bash
-termux-wake-lock
-```
-Y si quieres que arranque solo al encender, copia
-`deploy/termux-inicio.sh` a `~/.termux/boot/`.
-
 ### VPS con systemd
 ```bash
 sudo cp deploy/todoutesa.service /etc/systemd/system/
@@ -69,12 +56,12 @@ sudo systemctl enable --now todoutesa
 
 Se abre en `http://127.0.0.1:8630` (si el puerto esta ocupado prueba 8631, 8632...).
 
-## Acceso desde el telefono o desde fuera
+## Acceso desde otro equipo o desde fuera
 
 1. Menu lateral -> **Servidor**.
 2. Pon una **clave de acceso** (obligatoria para abrir a la red).
 3. Activa **"Permitir acceso desde otros equipos"**.
-4. Reinicia la app y abre desde el telefono la direccion que te muestra
+4. Reinicia la app y abre desde el otro equipo la direccion que te muestra
    (algo como `http://192.168.1.50:8630`).
 
 Sin clave no deja abrirlo a la red, a proposito. Para internet abierto hace
@@ -167,7 +154,7 @@ google_sync.py OAuth2 PKCE + Calendar + Tasks
 web/           index.html, app.js, app.css
 assets/        Bootstrap 5 e iconos, locales
 datos/         base de datos y credenciales (ignorado por git)
-deploy/        unidad systemd y arranque en Termux
+deploy/        unidad systemd para VPS
 ```
 
 ## Licencia

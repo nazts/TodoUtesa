@@ -6,7 +6,7 @@ Responde una sola pregunta: por que no me entra el sitio desde otro dispositivo.
     python diagnostico.py          (o:  python3 diagnostico.py)
 
 No cambia nada: solo lee la configuracion, mira las direcciones de red y prueba
-conectarse al puerto. Sirve igual en Termux, Windows, Linux y macOS.
+conectarse al puerto. Sirve igual en Windows, Linux y macOS.
 """
 import json
 import os
@@ -41,10 +41,6 @@ def leer_ajustes(ruta):
     return ajustes
 
 
-def es_termux():
-    return "com.termux" in os.environ.get("PREFIX", "")
-
-
 def direcciones_locales():
     encontradas = []
     try:
@@ -75,7 +71,7 @@ def direcciones_locales():
 
 
 def puertos_escuchando():
-    """Lee el socket real (Linux/Termux). Devuelve [(ip, puerto)] en LISTEN."""
+    """Lee el socket real (Linux). Devuelve [(ip, puerto)] en LISTEN."""
     encontrados = []
     try:
         with open("/proc/net/tcp", "r") as archivo:
@@ -130,10 +126,6 @@ def main():
     decir("1) Entorno")
     decir("   Python: " + sys.version.split()[0])
     decir("   Sistema: " + sys.platform)
-    if es_termux():
-        decir("   Termux: si (estas en un telefono)")
-    else:
-        decir("   Termux: no")
 
     # ---------------------------------------------------------- configuracion
     ruta = RUTA_DB if os.path.isfile(RUTA_DB) else RUTA_DB_VIEJA
@@ -186,7 +178,7 @@ def main():
         else:
             decir("   NO es alcanzable por la red (esto explica el error del otro dispositivo)")
 
-    # que dice el sistema operativo sobre el socket (Linux / Termux)
+    # que dice el sistema operativo sobre el socket (Linux)
     sockets = [s for s in puertos_escuchando() if s[1] == puerto]
     if sockets:
         direcciones_socket = []
@@ -225,7 +217,7 @@ def main():
         if direcciones:
             decir("")
             decir(" Si desde el otro equipo sigue sin entrar:")
-            decir("   - ese equipo esta en la misma wifi? (no datos moviles)")
+            decir("   - ese equipo esta en la misma red? (no otra wifi ni datos moviles)")
             decir("   - wifi de invitados / aislamiento de clientes del router")
             decir("   - firewall del sistema bloqueando el puerto " + str(puerto))
         decir("")
@@ -242,7 +234,7 @@ def main():
         decir("")
         decir("   A) Abrir SOLO la red local (misma wifi):")
         decir("      python servidor.py --red")
-        decir("      y abre en tu PC:  http://IP_DEL_TELEFONO:" + str(puerto))
+        decir("      y abre desde el otro equipo:  http://IP_DE_ESTE_EQUIPO:" + str(puerto))
         if not tiene_clave:
             decir("")
             decir("      OJO: pon una clave en la app (menu Servidor) antes de dejarlo")
